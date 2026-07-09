@@ -1,4 +1,4 @@
-const response = await fetch('http://localhost:3000/produto', {
+const response = await fetch('http://localhost:3000/produto?cor=vermelho', {
     method: 'POST',
     // headers: {
     //   'Content-Type': 'application/json',
@@ -6,7 +6,7 @@ const response = await fetch('http://localhost:3000/produto', {
     // body: JSON.stringify({ username: 'andre', password: '123456' }),
 });
 
-// console.log(response);
+console.log(response);
 
 const body = await response.text();
 console.log(body);
