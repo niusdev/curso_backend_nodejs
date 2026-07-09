@@ -58,3 +58,5 @@ Um Framework de Back End em Node.js será criado do zero para o desenvolvimento 
     - Bibliotecas, Frameworks e Conclusão
 
 ---
+
+> OBS.: VALE-SE FAZER UMA REVISÃO GERAL DE REDES DE COMPUTADORES
