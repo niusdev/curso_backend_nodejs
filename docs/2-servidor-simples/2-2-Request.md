@@ -108,16 +108,16 @@ O corpo da requisição chega como um iterável assíncrono (os `chunks`). Para 
 - `for await...of`
   - Itera e acumula cada `chunk`.
 
+  ```ts
+  const chunks = [];
+  for await (const chunk of req) {
+    chunks.push(chunk);
+  }
+  const body = Buffer.concat(chunks).toString("utf-8");
+  ```
+
 - `callback`
   - Usa eventos: `data` para cada `chunk` e `end` ao final.
-
-```ts
-const chunks = [];
-for await (const chunk of req) {
-  chunks.push(chunk);
-}
-const body = Buffer.concat(chunks).toString("utf-8");
-```
 
 ```ts
 const chunks = [];

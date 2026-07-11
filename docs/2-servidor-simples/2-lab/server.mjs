@@ -1,5 +1,5 @@
 import { createServer } from 'node:http';
-import { Router } from './router.mjs';
+import { Router } from './Router.mjs';
 import { customRequest } from './custom-request.mjs';
 import { customResponse } from './custom-response.mjs';
 
