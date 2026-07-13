@@ -2,7 +2,7 @@ import { DatabaseSync } from "node:sqlite";
 
 const db = new DatabaseSync('./db.sqlite');
 
-db.exec(`
+db.exec(/*sql*/`
   PRAGMA foreign_keys = 1;
   PRAGMA journal_mode = WAL;
   PRAGMA synchronous = NORMAL;
@@ -12,7 +12,7 @@ db.exec(`
   PRAGMA temp_store = MEMORY;
 `);
 
-db.exec(`
+db.exec(/*sql*/`
   CREATE TABLE IF NOT EXISTS "produtos" (
     "slug" TEXT PRIMARY KEY,
     "nome" TEXT NOT NULL,
@@ -21,12 +21,12 @@ db.exec(`
   );    
 `);
 
-const produtos = db.prepare(`SELECT * FROM "produtos"`).all();
-const notebook = db.prepare(`SELECT * FROM "produtos" WHERE "slug" = ?`).get("notebook");
+const produtos = db.prepare(/*sql*/`SELECT * FROM "produtos"`).all();
+const notebook = db.prepare(/*sql*/`SELECT * FROM "produtos" WHERE "slug" = ?`).get("notebook");
 
 // não parametrizado, não use se os valores não forem confiáveis
 db.prepare(
-    `
+    /*sql*/`
   INSERT OR IGNORE INTO "produtos"
     ("slug", "nome", "categoria", "preco")
   VALUES
@@ -36,7 +36,7 @@ db.prepare(
 
 // parametrizados
 db.prepare(
-    `
+   /*sql*/ `
   INSERT OR IGNORE INTO "produtos"
     ("slug", "nome", "categoria", "preco")
   VALUES
@@ -46,7 +46,7 @@ db.prepare(
 
 // Reutilizando statement para múltiplos INSERTs
 const insert = db.prepare(
-    `
+    /*sql*/`
   INSERT OR IGNORE INTO "produtos"
     ("slug", "nome", "categoria", "preco")
   VALUES
