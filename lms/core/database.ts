@@ -98,7 +98,7 @@ export function pegarCursos() {
   }
 }
 
-export function pegarCursoSlug(slug: string) {
+export function pegarCurso(slug: string) {
   try {
     return db
       .prepare(

@@ -8,6 +8,7 @@ import { Router } from "./Router.ts";
 import { customRequest } from "./http/custom-request.ts";
 import { customResponse } from "./http/custom-response.ts";
 import { bodyJSON } from "./middlewares/body-json.ts";
+import { RouteError } from "./utils/route-error.ts";
 
 export class Core {
   router: Router;
@@ -19,25 +20,49 @@ export class Core {
   }
 
   handler = async (request: IncomingMessage, response: ServerResponse) => {
-    const req = await customRequest(request);
-    const res = customResponse(response);
+    try {
+      const req = await customRequest(request);
+      const res = customResponse(response);
 
-    //executa middlewares globais
-    for (const middlware of this.router.middlewares) {
-      await middlware(req, res);
+      //executa middlewares globais
+      for (const middlware of this.router.middlewares) {
+        await middlware(req, res);
+      }
+
+      //faz o match entre a rota da requisição e a rota definida na api.
+      const matched = this.router.find(req.method || "", req.pathname);
+      if (!matched) {
+        throw new RouteError(404, "não encontrada.");
+      }
+
+      const { route, params } = matched;
+      req.params = params;
+
+      //executa middlewares da rota
+      for (const middleware of route.middlewares) {
+        await middleware(req, res);
+      }
+
+      await route.handler(req, res);
+    } catch (error) {
+      if (error instanceof RouteError) {
+        console.error(
+          `${error.status} ${error.message} | ${request.method} ${request.url}`,
+        );
+        response.statusCode = error.status;
+        response.setHeader("content-type:", "application/problem+json");
+        response.end(
+          JSON.stringify({ status: response.statusCode, title: error.message }),
+        );
+      } else {
+        console.error(error);
+        response.statusCode = 500;
+        response.setHeader("content-type:", "application/problem+json");
+        response.end(
+          JSON.stringify({ status: response.statusCode, title: "error." }),
+        );
+      }
     }
-    const matched = this.router.find(req.method || "", req.pathname);
-    if (!matched) return res.status(404).end("Page not found! 404");
-
-    const { route, params } = matched;
-    req.params = params;
-
-    //executa middlewares da rota
-    for (const middleware of route.middlewares) {
-      await middleware(req, res);
-    }
-
-    await route.handler(req, res);
   };
 
   init() {
