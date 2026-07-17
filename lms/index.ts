@@ -1,11 +1,12 @@
 import { Core } from "./core/core.ts";
 import { pegarCursoSlug } from "./core/database.ts";
+import { bodyJSON } from "./core/middlewares/body-json.ts";
+import { logger } from "./core/middlewares/logger.ts";
 
 const core = new Core();
-
+core.router.use([logger]);
 core.router.get("/curso/:slug", (req, res) => {
   const { slug } = req.params;
-  console.log(slug);
   const curso = pegarCursoSlug(slug);
 
   if (curso) {
