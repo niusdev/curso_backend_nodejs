@@ -20,7 +20,7 @@ core.db.exec(/*sql*/ `
 core.router.get("/products/:slug", (req, res) => {
   const { slug } = req.params;
   const product = core.db
-    .prepare(
+    .query(
       /*SQL*/ `
     SELECT * FROM "products" WHERE "slug" = ?
   `,

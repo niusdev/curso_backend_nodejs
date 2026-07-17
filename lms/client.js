@@ -1,11 +1,14 @@
-const urlBase = 'http://localhost:3000'
+console.clear();
 
-setTimeout(async () => {
-    const response = await fetch(urlBase + '/products/notebook');
-    console.log(response.ok, response.status);
-    const body = await response.json();
-    console.log(body);
-}, 200);
+const base = 'http://localhost:3000'
 
+const functions = {
+    async getProduct() {
+        const response = await fetch(base + '/products/notebook');
+        const body = await response.json();
+        console.table(body);
+    }
+}
 
+functions[process.argv[2]]();
 
