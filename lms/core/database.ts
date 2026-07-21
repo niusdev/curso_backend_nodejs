@@ -1,7 +1,7 @@
 import { DatabaseSync, StatementSync } from "node:sqlite";
 
 export class Database extends DatabaseSync {
-  queries: Record<string, StatementSync>;
+  private queries: Record<string, StatementSync>;
   constructor(path: string) {
     super(path);
     this.exec(/*sql*/ `
