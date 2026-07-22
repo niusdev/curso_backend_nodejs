@@ -1,0 +1,1 @@
+> Geralmente quando estivermos lidando com informações sensíveis passaremos a req pelo body

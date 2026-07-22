@@ -199,6 +199,20 @@ const functions = {
         });
         const body = await response.json();
         console.table(body);
+    },
+    async completeLesson() {
+        const response = await fetch(base + '/lms/lesson/complete', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                courseId: 1,
+                lessonId: 133
+            })
+        });
+        const body = await response.json();
+        console.table(body);
     }
 
 }
