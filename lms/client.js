@@ -146,7 +146,7 @@ const lessons = [
 ];
 const functions = {
     async postCourse() {
-        const response = await fetch(base + '/lms/courses', {
+        const response = await fetch(base + '/lms/course', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -158,7 +158,7 @@ const functions = {
     },
 
     async postLesson(lesson) {
-        const response = await fetch(base + '/lms/lessons', {
+        const response = await fetch(base + '/lms/lesson', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
