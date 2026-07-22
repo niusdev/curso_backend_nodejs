@@ -59,4 +59,23 @@ export class LmsQuery extends Query {
       )
       .run(courseSlug, slug, title, seconds, video, description, order, free);
   }
+
+  selectCourses() {
+    return this.db
+      .prepare(
+        /*SQL */ `
+        SELECT * FROM "courses" ORDER BY "created" ASC LIMIT 100  
+      `,
+      )
+      .all() as CourseData[];
+  }
+  selectCourse(slug: string) {
+    return this.db
+      .prepare(
+        /*SQL */ `
+        SELECT * FROM "courses" WHERE "slug" = ?  
+      `,
+      )
+      .get(slug) as CourseData | undefined;
+  }
 }

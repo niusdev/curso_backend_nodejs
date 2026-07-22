@@ -167,7 +167,18 @@ const functions = {
         });
         const body = await response.json();
         console.table(body);
-    }
+    },
+    async getCourses() {
+        const response = await fetch(base + '/lms/courses');
+        const body = await response.json();
+        console.log(body);
+    },
+    async getCourse() {
+        const response = await fetch(base + '/lms/course/javascript-completo');
+        const body = await response.json();
+        console.log(body);
+    },
+
 }
 
 // for (const lesson of lessons) {
