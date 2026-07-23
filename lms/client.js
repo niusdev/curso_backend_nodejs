@@ -174,12 +174,12 @@ const functions = {
         console.log(body);
     },
     async getCourse() {
-        const response = await fetch(base + '/lms/course/javascript-completo');
+        const response = await fetch(base + '/lms/course/html-e-css');
         const body = await response.json();
         console.log(body);
     },
     async getLesson() {
-        const response = await fetch(base + '/lms/lesson/javascript-completo/funcoes-basico');
+        const response = await fetch(base + '/lms/lesson/html-e-css/estrutura-do-documento');
         const body = await response.json();
         console.log(body);
     },
@@ -208,7 +208,20 @@ const functions = {
             },
             body: JSON.stringify({
                 courseId: 1,
-                lessonId: 133
+                lessonId: 1
+            })
+        });
+        const body = await response.json();
+        console.table(body);
+    },
+    async resetCourse() {
+        const response = await fetch(base + '/lms/course/reset', {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                courseId: 1
             })
         });
         const body = await response.json();
