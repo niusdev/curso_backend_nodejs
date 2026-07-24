@@ -207,13 +207,14 @@ const functions = {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                courseId: 1,
-                lessonId: 1
+                courseId: process.argv[4],
+                lessonId: process.argv[3]
             })
         });
         const body = await response.json();
         console.table(body);
     },
+
     async resetCourse() {
         const response = await fetch(base + '/lms/course/reset', {
             method: 'DELETE',
@@ -233,7 +234,6 @@ const functions = {
 // for (const lesson of lessons) {
 //     await functions.postLesson(lesson);
 // }
-
 if (process.argv[2]) {
     functions[process.argv[2]]();
 }
