@@ -156,7 +156,6 @@ const functions = {
         const body = await response.json();
         console.table(body);
     },
-
     async postLesson(lesson) {
         const response = await fetch(base + '/lms/lesson', {
             method: 'POST',
@@ -183,7 +182,6 @@ const functions = {
         const body = await response.json();
         console.log(body);
     },
-
     async postUser() {
         const response = await fetch(base + '/auth/user', {
             method: 'POST',
@@ -214,7 +212,6 @@ const functions = {
         const body = await response.json();
         console.table(body);
     },
-
     async resetCourse() {
         const response = await fetch(base + '/lms/course/reset', {
             method: 'DELETE',
@@ -227,6 +224,16 @@ const functions = {
         });
         const body = await response.json();
         console.table(body);
+    },
+    async getCertificates() {
+        const response = await fetch(base + '/lms/certificates');
+        const body = await response.json();
+        console.log(body);
+    },
+    async getCertificate() {
+        const response = await fetch(base + '/lms/certificate/' + process.argv[3]);
+        const body = await response.json();
+        console.log(body);
     }
 
 }

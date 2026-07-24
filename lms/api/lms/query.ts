@@ -29,6 +29,14 @@ type LessonCreate = Omit<LessonData, "id" | "course_id" | "created"> & {
   courseSlug: string;
 };
 
+type CertificatesFullData = {
+  id: string;
+  name: string;
+  title: string;
+  hours: number;
+  lessons: number;
+  completed: string;
+};
 export class LmsQuery extends Query {
   insertCourse({ slug, title, description, lessons, hours }: CourseCreate) {
     return this.db
@@ -170,6 +178,26 @@ export class LmsQuery extends Query {
       INSERT OR IGNORE INTO "certificates" ("user_id", "course_id") VALUES (?,?) RETURNING "id"
     `,
       )
-      .get(userId, courseId) as {id: string} | undefined;
+      .get(userId, courseId) as { id: string } | undefined;
+  }
+
+  selectCertificates(userId: number) {
+    return this.db
+      .prepare(
+        /*SQL*/ `
+      SELECT * FROM "certificates_full" WHERE "user_id" = ?  
+    `,
+      )
+      .all(userId) as CertificatesFullData[];
+  }
+
+  selectCertificate(certificateId: number) {
+    return this.db
+      .prepare(
+        /*SQL*/ `
+      SELECT * FROM "certificates_full" WHERE "id" = ?  
+    `,
+      )
+      .get(certificateId) as CertificatesFullData | undefined;
   }
 }
