@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-br">
   <head>
     <meta charset="UTF-8" />
@@ -35,24 +35,41 @@
         border: 1px solid #222;
       }
       input {
-        background: linear-gradient(to bottom, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.025));
+        background: linear-gradient(
+          to bottom,
+          rgba(255, 255, 255, 0.05),
+          rgba(255, 255, 255, 0.025)
+        );
       }
       input:focus {
         outline: white;
         border-color: white;
       }
       button {
-        background: linear-gradient(to bottom, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05));
+        background: linear-gradient(
+          to bottom,
+          rgba(255, 255, 255, 0.15),
+          rgba(255, 255, 255, 0.05)
+        );
         cursor: pointer;
       }
       button:hover {
-        background: linear-gradient(to bottom, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
+        background: linear-gradient(
+          to bottom,
+          rgba(255, 255, 255, 0.2),
+          rgba(255, 255, 255, 0.1)
+        );
       }
     </style>
 
     <form id="login">
       <label for="email">Email</label>
-      <input type="email" name="email" id="email" value="vinicius.exemplo@gmail.com" />
+      <input
+        type="email"
+        name="email"
+        id="email"
+        value="vinicius.exemplo@gmail.com"
+      />
       <label for="password">Senha</label>
       <input type="password" name="password" id="password" value="12345678" />
       <button>Logar</button>
@@ -82,7 +99,7 @@
       });
 
       async function autenticado() {
-        const response = await fetch("/seguro");
+        const response = await fetch("/segura");
         const body = await response.json();
         result.innerText = JSON.stringify(body, null, 2);
       }

@@ -1,13 +1,18 @@
 import { CoreProvider } from "../../../core/utils/abstract.ts";
 import { AuthQuery } from "../query.ts";
-
+import { randomBytesAsync, sha256 } from "../utils.ts";
+//time to leave
+const ttlSec = 60 * 60 * 24 * 15;
 export class SessionService extends CoreProvider {
   query = new AuthQuery(this.db);
   //não se passa req ou res em um service
-  async create({ userId, ip, ua }) {
-    const sid_hash = 1;
-    const expires_ms = Date.now() + 60 * 60 * 24 * 15 * 1000;
+  async create({ userId, ip, ua }: { userId: number; ip: string; ua: string }) {
+    const sid = (await randomBytesAsync(32)).toString("base64url");
+    const sid_hash = sha256(sid);
+    const expires_ms = Date.now() + ttlSec * 1000;
     this.query.insertSession({ sid_hash, user_id: userId, expires_ms, ip, ua });
-    return { sid_hash }; 
+
+    const cookie = `__Secure-sid=${sid}; Path=/; Max-Age=${ttlSec}; HttpOnly; Secure; SameSite=Lax`;
+    return { cookie };
   }
 }

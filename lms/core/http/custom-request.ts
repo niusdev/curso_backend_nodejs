@@ -1,10 +1,12 @@
 import type { IncomingMessage } from "node:http";
+import { parseCookies } from "../utils/parse-cookies.ts";
 
 export interface CustomRequest extends IncomingMessage {
   query: URLSearchParams;
   pathname: string;
   body: Record<string, any>;
   params: Record<string, any>;
+  cookies: Record<string, string | undefined>;
   ip: string;
 }
 
@@ -15,6 +17,7 @@ export async function customRequest(request: IncomingMessage) {
   req.pathname = url.pathname;
   req.params = {};
   req.body = {};
-  req.ip = req.socket.remoteAddress || '127.0.0.1';
+  req.ip = req.socket.remoteAddress || "127.0.0.1";
+  req.cookies = parseCookies(req.headers.cookie);
   return req;
 }

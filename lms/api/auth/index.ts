@@ -38,7 +38,7 @@ export class AuthApi extends Api {
         throw new RouteError(404, "email ou senha incorretos");
       }
 
-      const {sid_hash} = await this.session.create({
+      const { cookie } = await this.session.create({
         userId: user.id,
         ip: req.ip,
         ua: req.headers["user-agent"] ?? "",
@@ -47,8 +47,8 @@ export class AuthApi extends Api {
       //Set-Cookie define o cookie. Após ele vem o valor do cookie que é uma string
       // sid=${user.id} é o identificador do cookie. Após o ; definimos outras características do cookie
       // Path=/ é o caminho do cookie, o faz ficar persistente (no caso do Chrome);
-      res.setHeader("Set-Cookie", `sid=${sid_hash}; Path=/`);
-      res.status(200).json({ title: "login efetuado" });
+      res.setHeader("Set-Cookie", cookie);
+      res.status(200).json({ title: "autenticado" });
     },
   } satisfies Api["handlers"];
   tables(): void {
