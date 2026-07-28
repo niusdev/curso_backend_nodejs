@@ -44,10 +44,8 @@ export class AuthApi extends Api {
         ua: req.headers["user-agent"] ?? "",
       });
 
-      //Set-Cookie define o cookie. Após ele vem o valor do cookie que é uma string
-      // sid=${user.id} é o identificador do cookie. Após o ; definimos outras características do cookie
-      // Path=/ é o caminho do cookie, o faz ficar persistente (no caso do Chrome);
-      res.setHeader("Set-Cookie", cookie);
+      res.setCookie("pref=dark; Path=/");
+      res.setCookie(cookie);
       res.status(200).json({ title: "autenticado" });
     },
   } satisfies Api["handlers"];
