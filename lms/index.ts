@@ -18,26 +18,4 @@ core.router.get("/", async (req, res) => {
   res.status(200).end(index);
 });
 
-core.router.get("/segura", async (req, res) => {
-  const sid = req.cookies["__Secure-sid"]; //nesse caso não estamos lidando com cookies que possam ter o mesmo nome
-  if (!sid) {
-    throw new RouteError(401, "não autenticado.");
-  }
-
-  const sid_hash = sha256(sid);
-
-  const session = core.db
-    .query(
-      /*SQL*/ `
-      SELECT "user_id" FROM "sessions" WHERE "sid_hash" = ?
-  `,
-    )
-    .get(sid_hash);
-
-  if (!session) {
-    throw new RouteError(404, "usuário não encontrado.");
-  }
-  res.status(200).json(session);
-});
-
 core.init();
