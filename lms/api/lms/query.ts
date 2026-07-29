@@ -142,7 +142,7 @@ export class LmsQuery extends Query {
     return this.db
       .prepare(
         /*SQL */ `
-        SELECT "lesson_id", "completed" FROM "lessons_completed" WHERE "user_id" = ? AND "lesson_id" = ?
+        SELECT "lesson_id", "completed" FROM "lessons_completed" WHERE "user_id" = ? AND "course_id" = ?
       `,
       )
       .all(userId, courseId) as { lesson_id: number; completed: string }[];

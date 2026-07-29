@@ -1,0 +1,78 @@
+> middleware não faz retorno de rota.
+
+# Auth Middleware
+
+O Middleware de autenticação **facilita a verificação da sessão em rotas sensíveis aos dados do usuário**.
+
+- **`guard(role)`**
+  O método guard apenas libera a rota para usuários que satisfazerem o role.
+
+- **`optional`**
+  O método optional tenta autenticar se possível, se não for possível ele apenas retorna a sessão nula.
+
+```ts
+import type { Middleware } from "../../../core/Router.ts";
+import { CoreProvider } from "../../../core/utils/abstract.ts";
+import { RouteError } from "../../../core/utils/route-error.ts";
+import type { UserRole } from "../query.ts";
+import { COOKIE_SID_KEY, SessionService } from "../services/session.ts";
+
+function roleCheck(requiredRole: UserRole, userRole: UserRole): boolean {
+  switch (userRole) {
+    case "admin":
+      return true;
+    case "editor":
+      return requiredRole === "editor" || requiredRole === "user";
+    case "user":
+      return requiredRole === "user";
+    default:
+      return false;
+  }
+}
+
+export class AuthMiddleware extends CoreProvider {
+  session = new SessionService(this.core);
+
+  //função que retorna outra função(buscar entender pq fazer dessa maneira)
+  guard =
+    (role: UserRole): Middleware =>
+    async (req, res) => {
+      res.setHeader("Cache-Control", "private, no-store");
+      res.setHeader("Vary", "Cookie");
+
+      const sid = req.cookies[COOKIE_SID_KEY];
+
+      if (!sid) {
+        throw new RouteError(401, "não autorizado.");
+      }
+      const { valid, cookie, session } = this.session.validate(sid);
+      res.setCookie(cookie);
+      if (!valid || !session) {
+        throw new RouteError(401, "não autorizado.");
+      }
+
+      if (!roleCheck(role, session.role)) {
+        throw new RouteError(403, "sem permissão.");
+      }
+      req.session = session;
+    };
+
+  optional: Middleware = async (req, res) => {
+    const sid = req.cookies[COOKIE_SID_KEY];
+
+    if (!sid) {
+      return;
+    }
+    const { valid, cookie, session } = this.session.validate(sid);
+    res.setCookie(cookie);
+    if (!valid || !session) {
+      return;
+    }
+
+    res.setHeader("Cache-Control", "private, no-store");
+    res.setHeader("Vary", "Cookie");
+
+    req.session = session;
+  };
+}
+```
