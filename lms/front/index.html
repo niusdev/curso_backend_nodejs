@@ -60,6 +60,11 @@
           rgba(255, 255, 255, 0.1)
         );
       }
+
+      #logout {
+        max-width: 200px;
+        margin: 0 auto;
+      }
     </style>
 
     <form id="login">
@@ -75,11 +80,14 @@
       <button>Logar</button>
     </form>
 
+    <button id="logout">Sair</button>
+
     <pre id="result"></pre>
 
     <script>
       const form = document.querySelector("#login");
       const result = document.querySelector("#result");
+      const logout = document.querySelector("#logout");
 
       form.addEventListener("submit", async (e) => {
         e.preventDefault();
@@ -98,8 +106,19 @@
         }
       });
 
+      logout.addEventListener("click", async (e) => {
+        e.preventDefault();
+        const response = await fetch("/auth/logout", {
+          method: "DELETE",
+        });
+
+        if (response.ok) {
+          window.location.reload();
+        }
+      });
+
       async function autenticado() {
-        const response = await fetch("/lms/course/html-e-css");
+        const response = await fetch("/auth/session");
         const body = await response.json();
         result.innerText = JSON.stringify(body, null, 2);
       }
