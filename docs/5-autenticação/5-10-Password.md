@@ -91,6 +91,46 @@ const password_hmac = createHmac("sha256", PEPPER)
 
 ---
 
-# Verify Password
+# Verify Password (até esse ponto já estaria uma noa validação de hash e muito segura)
+
+Precisamos verificar se a senha enviada no momento do login é a mesma utilizada para gerar a **password_string (hash armazenado no banco)**.
+
+- `Parse String`  
+  Primeiro, fazemos o parse da string armazenada no banco de dados para separar salt e DK.
+
+- `Recriar a DK`  
+  Recriamos a derived key (DK) com a senha enviada pelo usuário, usando o salt e as mesmas opções do scrypt.
+
+- `timingSafeEqual`  
+  Comparamos os buffers da DK gerada com a DK do banco de dados. timingSafeEqual garante comparação em tempo constante.
+
+```ts
+function parsePasswordHash(password_hash: string) {
+  const parts = password_hash.split("$");
+  const [stored_salt_hex, stored_dk_hex] = parts;
+  const stored_salt = Buffer.from(stored_salt_hex, "hex");
+  const stored_dk = Buffer.from(stored_dk_hex, "hex");
+  return { stored_salt, stored_dk };
+}
+
+async function verifyPassword(password: string, password_hash: string) {
+  const { stored_salt, stored_dk } = parsePasswordHash(password_hash);
+
+  const password_normalized = password.normalize("NFC");
+  const password_hmac = createHmac("sha256", PEPPER)
+    .update(password_normalized)
+    .digest();
+
+  const dk = await scryptAsync(password_hmac, stored_salt, 32, SCRYPT_OPTIONS);
+
+  if (dk.length !== stored_dk.length) return false;
+
+  return timingSafeEqual(dk, stored_dk);
+}
+```
+
+---
 
 > timingSafeEqual gera uma comparação constante, mesmo quando falha ou é verdadeiro, o tempo de comparação é o mesmo, fazemos isso para evitar ataques que se utilizam do tempo que se leva para rejeitar uma senha (as que demoram masi a ser rejeitadas geralmente estarão mais próximas da senha real), com essa função o tempo de comparação permanence constante, evitando o sucesso desse tipo de ataque.
+
+---
