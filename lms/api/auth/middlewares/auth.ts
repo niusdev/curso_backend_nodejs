@@ -16,7 +16,6 @@ function roleCheck(requiredRole: UserRole, userRole: UserRole): boolean {
       return false;
   }
 }
-
 export class AuthMiddleware extends CoreProvider {
   session = new SessionService(this.core);
 
