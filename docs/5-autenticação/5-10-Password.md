@@ -90,3 +90,7 @@ const password_hmac = createHmac("sha256", PEPPER)
 ![alt text](image-5.png)
 
 ---
+
+# Verify Password
+
+> timingSafeEqual gera uma comparação constante, mesmo quando falha ou é verdadeiro, o tempo de comparação é o mesmo, fazemos isso para evitar ataques que se utilizam do tempo que se leva para rejeitar uma senha (as que demoram masi a ser rejeitadas geralmente estarão mais próximas da senha real), com essa função o tempo de comparação permanence constante, evitando o sucesso desse tipo de ataque.

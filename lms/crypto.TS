@@ -30,15 +30,16 @@ const SCRYPT_OPTIONS: ScryptOptions = {
 };
 
 const password = "P@ssw0rd";
-const password_normalized = password.normalize("NFC");
-const password_hmac = createHmac("sha256", PEPPER)
-  .update(password_normalized)
-  .digest();
 
-const dk = await scryptAsync(password_hmac, salt, 32, SCRYPT_OPTIONS);
+async function hashPassword(password: string) {
+  const password_normalized = password.normalize("NFC");
+  const password_hmac = createHmac("sha256", PEPPER)
+    .update(password_normalized)
+    .digest();
 
-//password_string (formatada dessa forma pois teremos de salvar o salt no bd para podermos validar a senha enviada pela requisição com a armazenada no bd)
-//separamos o salt da dk por $ para facilitar nosso parse futuro
-const password_hash = `${salt.toString("hex")}$${dk.toString("hex")}`;
+  const dk = await scryptAsync(password_hmac, salt, 32, SCRYPT_OPTIONS);
 
-console.log(password_hash);
+  //password_string (formatada dessa forma pois teremos de salvar o salt no bd para podermos validar a senha enviada pela requisição com a armazenada no bd)
+  //separamos o salt da dk por $ para facilitar nosso parse futuro
+  return `${salt.toString("hex")}$${dk.toString("hex")}`;
+}
