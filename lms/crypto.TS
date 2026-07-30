@@ -1,12 +1,15 @@
 import {
   type BinaryLike,
   type ScryptOptions,
+  createHmac,
   randomBytes,
   scrypt,
 } from "node:crypto";
 import { promisify } from "node:util";
 
 const randomBytesAsync = promisify(randomBytes);
+
+const PEPPER = "segredo";
 
 const scryptAsync: (
   password: BinaryLike,
@@ -26,10 +29,16 @@ const SCRYPT_OPTIONS: ScryptOptions = {
   p: 1, //paralelismo (1 é o padrão)
 };
 
-const dk = await scryptAsync("12345678", salt, 32, {});
+const password = "P@ssw0rd";
+const password_normalized = password.normalize("NFC");
+const password_hmac = createHmac("sha256", PEPPER)
+  .update(password_normalized)
+  .digest();
+
+const dk = await scryptAsync(password_hmac, salt, 32, SCRYPT_OPTIONS);
 
 //password_string (formatada dessa forma pois teremos de salvar o salt no bd para podermos validar a senha enviada pela requisição com a armazenada no bd)
 //separamos o salt da dk por $ para facilitar nosso parse futuro
 const password_hash = `${salt.toString("hex")}$${dk.toString("hex")}`;
 
-console.log(dk.toString("hex"));
+console.log(password_hash);

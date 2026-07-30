@@ -36,3 +36,57 @@ const dk = await scryptAsync(password, salt, 32, SCRYPT_OPTIONS);
 
 const password_hash = `${salt.toString("hex")}$${dk.toString("hex")}`;
 ```
+
+# HMAC
+
+Para aumentar a segurança, adicionamos um segredo do servidor (pepper) à senha antes de derivar o hash com scrypt.
+
+- `createHmac`  
+  Recebe o algoritmo de hash como sha256 + um segredo (pepper).
+
+- `update(pwd).digest()`  
+  Recebe a senha e devolve bytes.
+
+```ts
+import { createHmac } from "node:crypto";
+
+const password = "P@ssw0rd";
+
+// mudar o pepper irá invalidar todos os passwords
+const PEPPER = "segredo";
+
+const password_hmac = createHmac("sha256", PEPPER).update(password).digest();
+```
+
+---
+
+> para adicionar mais segurança a senha usaremos um HMAC para gerar um hash da senha enviada antes de gerar o hash final que irá para o banco de dados.
+
+> curiosidade: salt (sal) = valor aleatório que será utilizado para criar hashes diferente, ainda que a senha passada seja a mesma, sem ele senhas iguais teriam o mesmo hash (o que é perigoso pois caso o bd seja vazado pode-se descrobrir senhas mais facilmente uma vez que hashes iguais implicam em senhas mais utilizadas, ou seja, senhas fracas) e pepper (pimenta) = representa um 'segredo' presente no servidor usado para criar o HMAC (hash do valor enviado na req antes do hash final que irá para o bd)
+
+# ATENÇÃO! MUDAR O PEPPER IRÁ INVALIDAR TODOS OS PASSWORDS!
+
+> pergunta, onde gurdar esses valores e parametros ultrassensíveis que não podem ser jamais modificados? (acredito que veremos isso quando formos tratar de variáveis de ambiente)
+
+> com o HMAC se o bd vazar mas o segredo não será impossível mesmo com força bruta o atacante descobrir a senha final do usuário.
+
+---
+
+# normalize("NFC")
+
+Irá normalizar caracteres que paressem iguais mas não são como: `é` e `e\u0301`. **Aplicar sempre antes no hash (HMAC)**.
+
+```ts
+const password_normalized = password.normalize("NFC");
+const password_hmac = createHmac("sha256", PEPPER)
+  .update(password_normalized)
+  .digest();
+```
+
+> normalizamos sempre antes de criar o HMAC
+> questão não de segurança mas de usabilidade (ex.: pessoas que usam gerenciadores de senhas)
+
+![alt text](image-4.png)
+![alt text](image-5.png)
+
+---
