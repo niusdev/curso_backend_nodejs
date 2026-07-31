@@ -39,6 +39,17 @@ export class AuthQuery extends Query {
       )
       .run(name, username, email, role, password_hash);
   }
+
+  selectUser(key: "email" | "username" | "id", value: string) {
+    //notei um problema, se quiser buscar pelo id devia-se passa value como string | number
+    return this.db
+      .query(
+        /*SQL*/ `
+      SELECT "id", "password_hash" FROM "users" WHERE ${key} = ?  
+    `,
+      )
+      .get(value) as { id: number; password_hash: string } | undefined;
+  }
   insertSession({ sid_hash, user_id, expires_ms, ip, ua }: SessionCreate) {
     return this.db
       .query(

@@ -4,15 +4,28 @@ import { AuthMiddleware } from "./middlewares/auth.ts";
 import { AuthQuery } from "./query.ts";
 import { COOKIE_SID_KEY, SessionService } from "./services/session.ts";
 import { authTables } from "./tables.ts";
+import { Password } from "./utils/password.ts";
 
 export class AuthApi extends Api {
   query = new AuthQuery(this.db);
   session = new SessionService(this.core);
   auth = new AuthMiddleware(this.core);
+  pass = new Password("segredo");
   handlers = {
-    postUser: (req, res) => {
+    postUser: async (req, res) => {
       const { name, username, email, password } = req.body;
-      const password_hash = password;
+
+      const emailExists = this.query.selectUser("email", email);
+      if (emailExists) {
+        throw new RouteError(409, "email já cadastrado.");
+      }
+
+      const usernameExists = this.query.selectUser("username", username);
+      if (usernameExists) {
+        throw new RouteError(409, "username já cadastrado.");
+      }
+
+      const password_hash = await this.pass.hash(password);
       const writeResult = this.query.insertUser({
         name,
         username,
@@ -27,16 +40,17 @@ export class AuthApi extends Api {
 
       res.status(201).json({ title: "usuário criado." });
     },
-    // apenas um exemplo, NÃO é seguro.
+
     postLogin: async (req, res) => {
       const { email, password } = req.body;
-      const user = this.db
-        .query(
-          /*sql*/
-          `SELECT "id", "password_hash" FROM "users" WHERE "email" = ?`,
-        )
-        .get(email) as { password_hash: string; id: number } | undefined;
-      if (!user || password !== user.password_hash) {
+      const user = this.query.selectUser("email", email);
+      if (!user) {
+        throw new RouteError(404, "email ou senha incorretos");
+      }
+
+      const validPassword = this.pass.verify(password, user.password_hash);
+
+      if (!validPassword) {
         throw new RouteError(404, "email ou senha incorretos");
       }
 

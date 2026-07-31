@@ -1,4 +1,4 @@
-#
+# Password
 
 Assim como o sid da sessão, as senhas devem ser guardadas como hash no banco para que, em caso de vazamento, o atacante não obtenha as senhas em texto.
 
