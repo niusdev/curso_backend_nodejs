@@ -139,8 +139,51 @@ async function verifyPassword(password: string, password_hash: string) {
 
 O valor salvo no banco de dados deve incluir o hash gerado pelo scrypt e o salt utilizado. Também é útil registrar outras informações relevantes para a derivação, como o algoritmo e suas configurações.
 
-https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md
-(formato recomendado, não usaremos exatamente ele mas um bem semelhante inspirado no deles )
+> essa parte não é questão de segurança e sim para usabilidade do desenvolvedor. Não faremos o modelo de segurança 'caixa-preta'.
 
-> curiosidade: o algoritimo argon foi gerado nessa competição.
-> essa parte não é questão de segurança e sim para usabilidade do desenvolvedor
+- **PHC** ([formato recomendado 📌](https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md))
+  - Usaremos um formato inspirado no formato recomendado pelo PHC (Password Hashing Competition).
+    > curiosidade: o algoritimo argon foi gerado nessa competição.
+
+- **Formato utilizado:** `<id>$<v>$<norm>$<N=,r=,p=>$<salt>$<dk>`
+  - `<id>`: algoritmo utilizado;
+  - `<v>`: versão do código;
+  - `<norm>`: normalização usada na password;
+  - `<N=,r=,p=>`: parametros/configurações do algoritmo;
+  - `<salt>`: salt usado para gerar da senha hash;
+  - `<dk>`: dk gerada;
+    > Usamos o `$` para separar cada campo.
+
+```ts
+const NORM = "NFC";
+
+async function hashPassword(password: string) {
+  // ...
+  return (
+    `scrypt$v=1$norm=${NORM}$N=${SCRYPT_OPTIONS.N},r=${SCRYPT_OPTIONS.r},p=${SCRYPT_OPTIONS.p}` +
+    `$${salt.toString("hex")}$${dk.toString("hex")}`
+  );
+}
+
+function parsePasswordHash(password_hash: string) {
+  const parts = password_hash.split("$");
+  const [id, v, norm, options, stored_salt_hex, stored_dk_hex] = parts;
+  const stored_salt = Buffer.from(stored_salt_hex, "hex");
+  const stored_dk = Buffer.from(stored_dk_hex, "hex");
+  const stored_norm = norm.replace("norm=", "");
+  const stored_options = options.split(",").reduce((acc, kv) => {
+    const [k, v] = kv.split("=", 2);
+    acc[k] = Number(v);
+    return acc;
+  }, {});
+  return { stored_salt, stored_dk, stored_options, stored_norm };
+}
+```
+
+# Diagrama hashPassword
+
+![alt text](image-6.png)
+
+# Diagrama verifyPassword
+
+![alt text](image-7.png)
