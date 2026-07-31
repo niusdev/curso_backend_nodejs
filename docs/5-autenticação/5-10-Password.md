@@ -134,3 +134,13 @@ async function verifyPassword(password: string, password_hash: string) {
 > timingSafeEqual gera uma comparação constante, mesmo quando falha ou é verdadeiro, o tempo de comparação é o mesmo, fazemos isso para evitar ataques que se utilizam do tempo que se leva para rejeitar uma senha (as que demoram masi a ser rejeitadas geralmente estarão mais próximas da senha real), com essa função o tempo de comparação permanence constante, evitando o sucesso desse tipo de ataque.
 
 ---
+
+# Password String
+
+O valor salvo no banco de dados deve incluir o hash gerado pelo scrypt e o salt utilizado. Também é útil registrar outras informações relevantes para a derivação, como o algoritmo e suas configurações.
+
+https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md
+(formato recomendado, não usaremos exatamente ele mas um bem semelhante inspirado no deles )
+
+> curiosidade: o algoritimo argon foi gerado nessa competição.
+> essa parte não é questão de segurança e sim para usabilidade do desenvolvedor
