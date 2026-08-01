@@ -189,9 +189,9 @@ const functions = {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                name: 'Vinícius Damascena',
-                username: 'vinicius',
-                email: 'vinicius.exemplo@gmail.com',
+                name: 'Usuário Teste',
+                username: 'user_teste',
+                email: 'teste.exemplo@gmail.com',
                 password: '12345678'
             })
         });
@@ -235,7 +235,6 @@ const functions = {
         const body = await response.json();
         console.log(body);
     }
-
 }
 
 // for (const lesson of lessons) {

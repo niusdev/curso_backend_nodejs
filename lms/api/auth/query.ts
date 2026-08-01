@@ -28,6 +28,7 @@ type SessionData = {
 type SessionCreate = Omit<SessionData, "created" | "expires" | "revoked"> & {
   expires_ms: number;
 };
+
 export class AuthQuery extends Query {
   insertUser({ name, username, email, role, password_hash }: UserCreate) {
     return this.db
@@ -40,8 +41,7 @@ export class AuthQuery extends Query {
       .run(name, username, email, role, password_hash);
   }
 
-  selectUser(key: "email" | "username" | "id", value: string) {
-    //notei um problema, se quiser buscar pelo id devia-se passa value como string | number
+  selectUser(key: "email" | "username" | "id", value: string | number) {
     return this.db
       .query(
         /*SQL*/ `
@@ -50,6 +50,23 @@ export class AuthQuery extends Query {
       )
       .get(value) as { id: number; password_hash: string } | undefined;
   }
+
+  //teria tipado key: keyof UserCreate
+  updateUser(
+    user_id: number,
+    key: "password_hash" | "email" | "name",
+    value: string,
+  ) {
+    return this.db
+      .query(
+        /*SQL*/ `
+      UPDATE "users" SET ${key} = ?
+      WHERE "id" = ?  
+    `,
+      )
+      .run(value, user_id);
+  }
+
   insertSession({ sid_hash, user_id, expires_ms, ip, ua }: SessionCreate) {
     return this.db
       .query(
@@ -61,6 +78,7 @@ export class AuthQuery extends Query {
       )
       .run(sid_hash, user_id, Math.floor(expires_ms / 1000), ip, ua);
   }
+
   selectSession(sid_hash: Buffer) {
     return this.db
       .query(
@@ -70,16 +88,27 @@ export class AuthQuery extends Query {
       )
       .get(sid_hash) as (SessionData & { expires_ms: number }) | undefined;
   }
-  revokeSession(key: "sid_hash" | "user_id", sid_hash: Buffer) {
-    //nessa ainda não está a logica de apagar por id usuário
+
+  revokeSessions(user_id: number) {
     return this.db
       .query(
         /*SQL*/ `
-    UPDATE "sessions" SET "revoked" = 1 WHERE ${key} = ?  
+    UPDATE "sessions" SET "revoked" = 1 WHERE "user_id" = ?  
+    `,
+      )
+      .run(user_id);
+  }
+
+  revokeSession(sid_hash: Buffer) {
+    return this.db
+      .query(
+        /*SQL*/ `
+    UPDATE "sessions" SET "revoked" = 1 WHERE "sid_hash" = ?  
     `,
       )
       .run(sid_hash);
   }
+
   updateSessionExpires(sid_hash: Buffer, expires_ms: number) {
     //nessa ainda não está a logica de apagar por id usuário
     return this.db
@@ -90,6 +119,7 @@ export class AuthQuery extends Query {
       )
       .run(Math.floor(expires_ms / 1000), sid_hash);
   }
+
   selectUserRole(id: number) {
     return this.db
       .query(

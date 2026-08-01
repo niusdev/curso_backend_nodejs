@@ -1,3 +1,4 @@
+import { error } from "node:console";
 import { Api } from "../../core/utils/abstract.ts";
 import { RouteError } from "../../core/utils/route-error.ts";
 import { AuthMiddleware } from "./middlewares/auth.ts";
@@ -48,8 +49,11 @@ export class AuthApi extends Api {
         throw new RouteError(404, "email ou senha incorretos");
       }
 
-      const validPassword = this.pass.verify(password, user.password_hash);
-
+      const validPassword = await this.pass.verify(
+        password,
+        user.password_hash,
+      );
+      console.log(validPassword);
       if (!validPassword) {
         throw new RouteError(404, "email ou senha incorretos");
       }
@@ -64,12 +68,61 @@ export class AuthApi extends Api {
       res.setCookie(cookie);
       res.status(200).json({ title: "autenticado" });
     },
+
+    updatePassword: async (req, res) => {
+      const { password, new_password } = req.body;
+
+      //no do professor nessa parte não tem, mas coloquei pois percebi que dava para salvar com senha vazia
+      if (!new_password || new_password.trim() === "") {
+        throw new RouteError(400, "A nova senha não pode ser vazia.");
+      }
+
+      if (!req.session) {
+        throw new RouteError(401, "não autorizado");
+      }
+
+      const user = this.query.selectUser("id", req.session.user_id);
+      if (!user) {
+        throw new RouteError(401, "usuário não encontrado.");
+      }
+
+      const validPassword = await this.pass.verify(
+        password,
+        user.password_hash,
+      );
+      if (!validPassword) {
+        throw new RouteError(400, "senha atual incorreta.");
+      }
+
+      const new_password_hash = await this.pass.hash(new_password);
+      const updateResult = this.query.updateUser(
+        user.id,
+        "password_hash",
+        new_password_hash,
+      );
+
+      if (updateResult.changes === 0) {
+        throw new RouteError(400, "Erro ao atualizar senha.");
+      }
+
+      this.session.invalidateAll(user.id);
+      const { cookie } = await this.session.create({
+        userId: user.id,
+        ip: req.ip,
+        ua: req.headers["user-agent"] || "",
+      });
+
+      res.setCookie(cookie);
+      res.status(200).json({ title: "senha atualizada." });
+    },
+
     getSession: (req, res) => {
       if (!req.session) {
         throw new RouteError(401, "não autorizado.");
       }
       res.status(200).json({ title: "válida." });
     },
+
     deleteSession: (req, res) => {
       const sid = req.cookies[COOKIE_SID_KEY];
       const { cookie } = this.session.invalidate(sid);
@@ -87,6 +140,11 @@ export class AuthApi extends Api {
     this.router.post("/auth/user", this.handlers.postUser);
     this.router.post("/auth/login", this.handlers.postLogin);
     this.router.delete("/auth/logout", this.handlers.deleteSession);
+
+    this.router.put("/auth/update/password", this.handlers.updatePassword, [
+      this.auth.guard("user"),
+    ]);
+
     this.router.get("/auth/session", this.handlers.getSession, [
       this.auth.guard("user"),
     ]);

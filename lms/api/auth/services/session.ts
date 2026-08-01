@@ -37,7 +37,7 @@ export class SessionService extends CoreProvider {
     let expires_ms = session.expires_ms;
 
     if (now >= expires_ms) {
-      this.query.revokeSession("sid_hash", sid_hash);
+      this.query.revokeSession(sid_hash);
       return {
         valid: false,
         cookie: sidCookie("", 0),
@@ -52,7 +52,7 @@ export class SessionService extends CoreProvider {
 
     const user = this.query.selectUserRole(session.user_id);
     if (!user) {
-      this.query.revokeSession("sid_hash", sid_hash);
+      this.query.revokeSession(sid_hash);
       return {
         valid: false,
         cookie: sidCookie("", 0),
@@ -69,15 +69,20 @@ export class SessionService extends CoreProvider {
       },
     };
   }
+
   invalidate(sid: string | undefined) {
     const cookie = sidCookie("", 0);
     try {
       if (sid) {
         const sid_hash = sha256(sid);
-        this.query.revokeSession("sid_hash", sid_hash);
+        this.query.revokeSession(sid_hash);
       }
     } catch (error) {} //dessa forma ao invés de lançar o erro para sempre enviar o cookie mesmo que a operação no bd falhe
 
     return { cookie };
+  }
+
+  invalidateAll(userId: number) {
+    this.query.revokeSessions(userId);
   }
 }
