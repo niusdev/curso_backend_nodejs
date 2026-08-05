@@ -29,6 +29,19 @@ type SessionCreate = Omit<SessionData, "created" | "expires" | "revoked"> & {
   expires_ms: number;
 };
 
+type ResetData = {
+  token_hash: Buffer;
+  user_id: number;
+  created: number;
+  expires: number;
+  ip: string;
+  ua: string;
+};
+
+type ResetCreate = Omit<ResetData, "created" | "expires"> & {
+  expires_ms: number;
+};
+
 export class AuthQuery extends Query {
   insertUser({ name, username, email, role, password_hash }: UserCreate) {
     return this.db
@@ -45,10 +58,12 @@ export class AuthQuery extends Query {
     return this.db
       .query(
         /*SQL*/ `
-      SELECT "id", "password_hash" FROM "users" WHERE ${key} = ?  
+      SELECT "id", "password_hash","email" FROM "users" WHERE ${key} = ?  
     `,
       )
-      .get(value) as { id: number; password_hash: string } | undefined;
+      .get(value) as
+      | { id: number; password_hash: string; email: string }
+      | undefined;
   }
 
   //teria tipado key: keyof UserCreate
@@ -128,5 +143,37 @@ export class AuthQuery extends Query {
   `,
       )
       .get(id) as { role: UserRole } | undefined;
+  }
+
+  insertReset({ token_hash, user_id, expires_ms, ip, ua }: ResetCreate) {
+    return this.db
+      .query(
+        /*SQL*/ `
+        INSERT OR IGNORE INTO "resets"
+        ("token_hash", "user_id", "expires", "ip","ua")    
+        VALUES (?,?,?,?,?)
+    `,
+      )
+      .run(token_hash, user_id, Math.floor(expires_ms / 1000), ip, ua);
+  }
+
+  selectReset(token_hash: Buffer) {
+    return this.db
+      .query(
+        /*SQL*/ `
+      SELECT "r".*, "r"."expires" * 1000 as "expires_ms" FROM "resets" as "r" WHERE "token_hash" = ?
+  `,
+      )
+      .get(token_hash) as (ResetData & { expires_ms: number }) | undefined;
+  }
+
+  deleteReset(user_id: number) {
+    return this.db
+      .query(
+        /*SQL*/ `
+      DELETE FROM "resets" WHERE "user_id" = ?;  
+    `,
+      )
+      .run(user_id);
   }
 }

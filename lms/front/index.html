@@ -89,6 +89,20 @@
       <button>Atualizar Senha</button>
     </form>
 
+    <form id="forgot-password">
+      <label for="email">Email</label>
+      <input type="email" name="email" value="teste.exemplo@gmail.com" />
+      <button>Esqueci a senha.</button>
+    </form>
+
+    <form id="reset-password">
+      <label for="new_password">Nova Senha</label>
+      <input type="password" name="new_password" value="12345678910" />
+      <label for="token">Token</label>
+      <input type="text" name="token" />
+      <button>Resetar senha.</button>
+    </form>
+
     <button id="logout">Sair</button>
 
     <pre id="result"></pre>
@@ -96,6 +110,8 @@
     <script>
       const login = document.querySelector("#login");
       const updatePassword = document.querySelector("#update-password");
+      const forgotPassword = document.querySelector("#forgot-password");
+      const resetPassword = document.querySelector("#reset-password");
       const result = document.querySelector("#result");
       const logout = document.querySelector("#logout");
 
@@ -119,8 +135,42 @@
       updatePassword.addEventListener("submit", async (e) => {
         e.preventDefault();
         const data = new FormData(updatePassword);
-        const response = await fetch("/auth/update/password", {
+        const response = await fetch("/auth/password/update", {
           method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(Object.fromEntries(data)),
+        });
+        const body = await response.json();
+        result.innerText = JSON.stringify(body, null, 2);
+        if (response.ok) {
+          window.location.reload();
+        }
+      });
+
+      forgotPassword.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const data = new FormData(forgotPassword);
+        const response = await fetch("/auth/password/forgot", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(Object.fromEntries(data)),
+        });
+        const body = await response.json();
+        result.innerText = JSON.stringify(body, null, 2);
+        if (response.ok) {
+          window.location.reload();
+        }
+      });
+
+      resetPassword.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const data = new FormData(resetPassword);
+        const response = await fetch("/auth/password/reset", {
+          method: "POST",
           headers: {
             "Content-Type": "application/json",
           },

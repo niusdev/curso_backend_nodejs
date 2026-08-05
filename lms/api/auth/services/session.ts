@@ -85,4 +85,36 @@ export class SessionService extends CoreProvider {
   invalidateAll(userId: number) {
     this.query.revokeSessions(userId);
   }
+
+  async resetToken({
+    userId,
+    ip,
+    ua,
+  }: {
+    userId: number;
+    ip: string;
+    ua: string;
+  }) {
+    const token = (await randomBytesAsync(32)).toString("base64url");
+    const token_hash = sha256(token);
+    const expires_ms = Date.now() + 1000 * 60 * 30;
+    this.query.insertReset({ token_hash, user_id: userId, expires_ms, ip, ua });
+    return { token };
+  }
+
+  validateToken(token: string) {
+    const now = Date.now();
+    const token_hash = sha256(token);
+    const reset = this.query.selectReset(token_hash);
+    if (!reset) return null;
+
+    if (now > reset.expires_ms) {
+      return null;
+    }
+
+    this.query.revokeSessions(reset.user_id);
+    this.query.deleteReset(reset.user_id);
+
+    return { user_id: reset.user_id };
+  }
 }
