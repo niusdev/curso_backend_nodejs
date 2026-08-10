@@ -239,11 +239,12 @@ const functions = {
         const response = await fetch(base + '/', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                big: 'a'.repeat(6_000_000),
             },
-            body: JSON.stringify('a'.repeat(5_000_000))
+            body: JSON.stringify('a'.repeat(6_000_000))
         });
-        const body = await response.json();
+        const body = await response.json('');
         console.table(body);
     }
 }
