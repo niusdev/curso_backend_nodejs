@@ -72,9 +72,9 @@ export class Core {
     this.server.listen(3000, () => {
       console.log("Servidor rodando na porta: 3000");
     });
-    this.server.on("clientError", (error, socket) => {
-      console.log(error);
-      socket.destroy();
-    });
+    // this.server.on("clientError", (error, socket) => {
+    //   console.log(error);
+    //   socket.destroy();
+    // });
   }
 }

@@ -1,7 +1,7 @@
 import type { Middleware } from "../Router.ts";
 import { RouteError } from "../utils/route-error.ts";
 
-const MAX_BYTES = 5_000_000;
+const MAX_BYTES = 5_000_000; //O "_" é ignorado pelo js, é colocado para melhorar a visualização.
 
 export const bodyJSON: Middleware = async (req, res) => {
   if (
