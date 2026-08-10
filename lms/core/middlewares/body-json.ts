@@ -1,4 +1,7 @@
 import type { Middleware } from "../Router.ts";
+import { RouteError } from "../utils/route-error.ts";
+
+const MAX_BYTES = 5_000_000;
 
 export const bodyJSON: Middleware = async (req, res) => {
   if (
@@ -8,16 +11,41 @@ export const bodyJSON: Middleware = async (req, res) => {
     return;
   }
 
+  const contentLength = Number(req.headers["content-length"]);
+
+  if (!Number.isInteger(contentLength)) {
+    throw new RouteError(400, "content-length inválido.");
+  }
+
+  if (contentLength > MAX_BYTES) {
+    throw new RouteError(413, "corpo grande.");
+  }
+
+  console.log(contentLength);
+
   const chunks: Buffer[] = [];
-  for await (const chunk of req) {
-    chunks.push(chunk);
-  }
-  const body = Buffer.concat(chunks).toString("utf-8");
+  let size = 0;
 
-  if (body === "") {
-    req.body = {};
-    return;
+  try {
+    for await (const chunk of req) {
+      const buf = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk); //caso o client mude o encoding da req.
+      size += buf.length;
+      if (size > MAX_BYTES) {
+        throw new RouteError(413, "corpo grande.");
+      }
+      chunks.push(buf);
+    }
+  } catch (error) {
+    throw new RouteError(400, "request abortado.");
   }
-
-  req.body = JSON.parse(body);
+  try {
+    const body = Buffer.concat(chunks).toString("utf-8");
+    if (body === "") {
+      req.body = {};
+      return;
+    }
+    req.body = JSON.parse(body);
+  } catch (error) {
+    throw new RouteError(400, "json inválido.");
+  }
 };

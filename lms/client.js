@@ -241,7 +241,7 @@ const functions = {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify('teste')
+            body: JSON.stringify('a'.repeat(5_000_000))
         });
         const body = await response.json();
         console.table(body);
