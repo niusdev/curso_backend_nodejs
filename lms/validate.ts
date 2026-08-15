@@ -40,3 +40,11 @@ function email(x: unknown) {
   return email_re.test(s) ? s : undefined;
 }
 
+const password_re = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/;
+
+/**mín. 10 e no máx. 256 caracteres, sendo pelo menos uma letra minúscula, uma maiúscula e um dígito.*/
+function password(x: unknown) {
+  if (typeof x !== "string") return undefined;
+  if (x.length < 10 || x.length > 256) return undefined;
+  return password_re.test(x) ? x : undefined;
+}
