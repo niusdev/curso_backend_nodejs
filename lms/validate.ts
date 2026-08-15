@@ -32,6 +32,11 @@ function object(x: unknown): Record<string, unknown> | undefined {
     : undefined;
 }
 
-function email(x: string) {
-  return /^[^@]+@[^@]+$/.test(x) ? x : undefined;
+const email_re = /^[^@]+@[^@]+\.[^@]+$/;
+
+function email(x: unknown) {
+  const s = string(x)?.toLowerCase();
+  if (s === undefined) return undefined;
+  return email_re.test(s) ? s : undefined;
 }
+
