@@ -25,6 +25,13 @@ function boolean(x: unknown) {
   return undefined;
 }
 
+/**verifica se é um {} */
+function object(x: unknown): Record<string, unknown> | undefined {
+  return typeof x === "object" && x !== null && !Array.isArray(x)
+    ? (x as Record<string, unknown>)
+    : undefined;
+}
+
 function email(x: string) {
   return /^[^@]+@[^@]+$/.test(x) ? x : undefined;
 }
