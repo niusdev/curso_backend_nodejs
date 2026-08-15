@@ -1,3 +1,5 @@
+import { RouteError } from "./route-error.ts";
+
 /**trim e não aceita cadeia vazia */
 function string(x: unknown) {
   if (typeof x !== "string") return undefined;
@@ -48,3 +50,30 @@ function password(x: unknown) {
   if (x.length < 10 || x.length > 256) return undefined;
   return password_re.test(x) ? x : undefined;
 }
+
+type Parse<Value> = (x: unknown) => Value | undefined;
+
+function required<Value>(fn: Parse<Value>, error: string) {
+  return (x: unknown) => {
+    const value = fn(x);
+    if (value === undefined) throw new RouteError(422, error);
+    return value;
+  };
+}
+
+export const v = {
+  string: required(string, "string esperada"),
+  number: required(number, "número esperado"),
+  boolean: required(boolean, "booleano esperado"),
+  object: required(object, "objeto esperado"),
+  email: required(email, "email inválido"),
+  password: required(password, "password  inválido"),
+  o: {
+    string,
+    number,
+    boolean,
+    object,
+    email,
+    password,
+  },
+};
