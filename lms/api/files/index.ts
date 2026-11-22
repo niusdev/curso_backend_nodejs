@@ -18,7 +18,7 @@ export class FilesApi extends Api {
       const ext = path.extname(name);
       let st;
       try {
-        st = await stat(filePath);
+        st = await stat(filePath);''
       } catch (error) {
         throw new RouteError(404, "arquivo não encontrado.");
       }
