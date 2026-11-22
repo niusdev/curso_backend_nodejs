@@ -1,17 +1,20 @@
-import { stat } from "node:fs/promises";
+import { rename, rm, stat } from "node:fs/promises";
 import { Api } from "../../core/utils/abstract.ts";
 import { createReadStream, createWriteStream } from "node:fs";
 import { pipeline } from "node:stream/promises";
 import { v } from "../../core/utils/validate.ts";
-import path from "node:path";
-import { checkETag, mimeType } from "./utils.ts";
+import path, { extname } from "node:path";
+import { checkETag, LimitBytes, mimeType } from "./utils.ts";
 import { RouteError } from "../../core/utils/route-error.ts";
+import { randomUUID } from "node:crypto";
 
+const MAX_BYTES = 150 * 1024 * 1024; //150 MB
+const FILES_PATH = "./files";
 export class FilesApi extends Api {
   handlers = {
     sendFile: async (req, res) => {
       const name = v.file(req.params.name);
-      const filePath = `./files/${name}`;
+      const filePath = path.join(FILES_PATH, name);
       const ext = path.extname(name);
       let st;
       try {
@@ -41,10 +44,40 @@ export class FilesApi extends Api {
       await pipeline(file, res);
     },
     uploadFile: async (req, res) => {
-      const name = req.headers["x-filename"];
-      const writeStream = createWriteStream(`./files/${name}`);
-      await pipeline(req, writeStream);
-      res.end("ok");
+      if (req.headers["content-type"] !== "application/octet-stream") {
+        throw new RouteError(415, "use octet-stream");
+      }
+
+      const contentLength = Number(req.headers["content-length"]);
+      if (!Number.isInteger(contentLength)) {
+        throw new RouteError(400, "content-length inválido.");
+      }
+
+      if (contentLength > MAX_BYTES) {
+        throw new RouteError(413, "corpo grande.");
+      }
+
+      const name = v.file(req.headers["x-filename"]);
+      const now = Date.now();
+      const ext = extname(name);
+      const finalName = `${name.replace(ext, "")}-${now}${ext}`;
+      const tempPath = path.join(FILES_PATH, `${randomUUID()}.temp`);
+      const writePath = path.join(FILES_PATH, finalName);
+      const writeStream = createWriteStream(tempPath, { flags: "wx" });
+
+      try {
+        await pipeline(req, LimitBytes(MAX_BYTES), writeStream);
+        await rename(tempPath, writePath);
+        res.status(201).end("ok");
+      } catch (error) {
+        if (error instanceof RouteError) {
+          throw new RouteError(error.status, error.message);
+        } else {
+          throw new RouteError(500, "erro");
+        }
+      } finally {
+        await rm(tempPath, { force: true }).catch(() => {});
+      }
     },
   } satisfies Api["handlers"];
 
